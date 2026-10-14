@@ -26,6 +26,7 @@ VRChat 世界「这里有人」雨夜单人房的 Unity 包。环境：VRChat Wo
 - 重跑：删根下除 `Static` 外的全部子物体再建；`Static` 永不删，占位物体（Window_Glass、Lamp_Light、Window_AreaLight）只在缺时建。按钮世界姿态、SuiteZone 盒子（未另指定时）先记下再恢复。几何量都在删除**之前**量（参考碰撞体可能就是旧的 RoomInterior）。门/玻璃若在被删的子物体里 → 报错中止。
 - Undo：整次一个组；异常时 `Undo.RevertAllDownToGroup`。资源文件不进 Undo。
 - 资源默认「已存在就原样沿用」，勾「重置材质和 Profile」才重写（保护用户手调的数）。
+- 雷暴 Profile 按预设分两份：纯黑白版（`_Mono`）只覆盖 Post-exposure，不覆盖 Saturation（-55 会盖掉 -100，一打雷就返色）。
 - 几何：参考 Box Collider → `Frame`（中心/旋转/世界尺寸）；门、窗按「离哪面内墙最近（x 或 z 面）」定外法线，用 `Renderer.localBounds` 角点转到房间局部坐标量宽高与内外面（`Opening.nIn/nOut`）。没 Renderer 退到 Collider 世界 AABB，再退到默认 0.9×2.1。
 - 漏光 Spot Angle 按 cookie 白矩形高 0.834 反算：`2·atan(tan(门上下沿偏轴角)/0.834)`。
 - 雨粒子物体旋转 `LookRotation(-up, out)`：+Z 朝下（Box 沿 +Z 发射），+Y 朝窗外；shape.scale=(窗宽+1, 5, 0.5)；Velocity over Lifetime 用 Local，三分量都给常数（Unity 要求同模式）。
@@ -47,9 +48,9 @@ VRChat 世界「这里有人」雨夜单人房的 Unity 包。环境：VRChat Wo
 
 ## 不确定（优先怀疑这些）
 1. `AudioLowPassFilter.cutoffFrequency` 是否开放给 Udon。不行就删 DoorMuffle.cs 和 .asset。
-2. DoorFilterLeak.shader 从没编译过（SPS-I 宏看着对）。shader 没编译成功时工具会跳过 LeakGlass。
+2. DoorFilterLeak.shader 从没编译过（SPS-I 宏看着对）。shader 没编译成功时工具会跳过 LeakGlass（`ShaderUtil.ShaderHasError` + `isSupported` 双重检查）。
 3. Stretched Billboard 下 rain_streak.png 的哪条轴沿速度方向，没查到官方说明。如果显示成横的，就把贴图转 90°。
-4. Mochie `_Refraction`=0.4（文档 0.3–0.5，shader 默认 5），可能太弱。Dynamic Droplets 的倍数 ×1.3/×1/×0.7、Lift (0.96,0.98,1.06,-0.02) 都是自定的。
+4. Mochie `_Refraction` 现在 = shader 默认值 × `GlassRefractionMul`（×1，默认 5；文档原来的 0.3–0.5 太弱，已改），观感没实测。Dynamic Droplets 的倍数 ×1.3/×1/×0.7、Lift (0.96,0.98,1.06,-0.02) 都是自定的。
 5. VRCSpatialAudioSource 的 `Near`/`Far` 字段名、VRC_SceneDescriptor 的 `ReferenceCamera` 字段名：反射读写，失败只提示。
 6. 首次搭建的两段式流程（生成 Program Asset → 等升级编译）没实测耗时。卡住时用 VRChat SDK → Udon Sharp → Force Upgrade，或重启 Unity。
 7. 门洞漏光的 Spot Angle 反算，假设 Spot cookie 铺满整个锥角。

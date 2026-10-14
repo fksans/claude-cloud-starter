@@ -87,7 +87,7 @@ Room_这里有人
 ├── Buttons        Button_小雨 / 大雨 / 雷暴 / 关闪电（Cube + Box Collider + WeatherButton.cs，Interaction Text 已填）
 └── RoomContent    默认关闭
     ├── Room_PP          Layer 22，Box Collider = 内墙，Is Global 关，Blend 0，Priority 10，Weight 1
-    ├── Room_PP_Storm    Layer 22，同样大小，Priority 11，Weight 0，Profile 只勾 Post-exposure -0.7、Saturation -55
+    ├── Room_PP_Storm    Layer 22，同样大小，Priority 11，Weight 0，Profile 只勾 Post-exposure -0.7、Saturation -55（纯黑白时只勾 Post-exposure）
     ├── Room_PP_Leak     Layer 22，宽 = 门宽 + 0.4、高 = 门高、深 1 m，贴着门外，Blend 1.5，Priority 9，Weight 0
     ├── Rain_Light / Rain_Heavy / Rain_Storm   Box 发射器，速度 5/8/9，Rate 100/300/380，Max 150/400/500，
     │                                          风 X 0/-0.3/-0.8，Alpha 0.25/0.35/0.4，Prewarm，World，Stretched Billboard
@@ -103,9 +103,9 @@ Room_这里有人
 
 **生成的资源**（`<包>/Generated/`）
 - `Room_PP_Profile.asset`（或纯黑白的 `Room_PP_Profile_Mono.asset`）：Color Grading（HDR、ACES、EV -0.4、Temperature -18、Tint +3、Saturation -45、Contrast +12、Lift 轻微偏蓝 -0.02）+ Vignette（0.28 / 0.45 / 黑）。房间和门口的 Volume 共用这一份。
-- `Room_PP_Storm_Profile.asset`
+- `Room_PP_Storm_Profile.asset`（或纯黑白的 `Room_PP_Storm_Profile_Mono.asset`，只勾 Post-exposure：再勾 Saturation -55 会盖掉黑白的 -100，一打雷就返色）
 - `Rain_Streak.mat`（Particles/Standard Unlit，Fade，rain_streak.png）、`FlashGlow.mat`（Additive，黑色）、`LeakGlass.mat`（Tint / Saturation 0.55 / Brightness 0.8）
-- `Room_Glass_Light / Heavy / Storm.mat`（装了 Mochie 才有）：Grabpass、Roughness 0、Normal Refraction 0.4、Grabpass Tint #8A93A3、Reflections 0.3、SSR 关、Rain = Droplets；Strength ×0.5/×1/×1.2，Speed ×0.6/×1/×1.3，Dynamic Droplets ×1.3/×1/×0.7（相对 shader 默认值）
+- `Room_Glass_Light / Heavy / Storm.mat`（装了 Mochie 才有）：Grabpass、Roughness 0、Normal Refraction = shader 默认值（Mochie 是 5）、Grabpass Tint #8A93A3、Reflections 0.3、SSR 关、Rain = Droplets；Strength ×0.5/×1/×1.2，Speed ×0.6/×1/×1.3，Dynamic Droplets ×1.3/×1/×0.7（相对 shader 默认值）
 - `Room_Glass_Fallback.mat`：没装 Mochie、又建了占位玻璃时用的普通透明材质
 - 贴图导入：三张 cookie 设为 Cookie / Spotlight / From Gray Scale / Clamp / Crunch；雨丝设为 Alpha Is Transparency / Clamp
 
@@ -160,7 +160,7 @@ Room_这里有人
 | DoorFilterLeak.shader | 单通道立体（SPS-I）下的 GrabPass。 | 原样沿用，**没编译测试过**（文档原本就标了）。宏的用法（`UNITY_DECLARE_SCREENSPACE_TEXTURE` + `UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX`）看起来是对的。shader 没编译成功时工具会跳过 LeakGlass。 |
 | 雨丝方向 | Stretched Billboard 下 `rain_streak.png`（竖条）沿速度方向拉伸后是不是竖着的。 | **没查到官方说明贴图哪条轴沿速度方向**。如果看到的是横着的短片，把 rain_streak.png 转 90° 再试。 |
 | Mochie/Glass | 属性名 `_BlendMode` `_Roughness` `_Refraction` `_GrabpassTint` `_ReflectionsToggle` `_ReflectionStrength` `_SSRToggle` `_RainMode` `_Strength` `_Speed` `_DynamicDroplets`，keyword 逻辑照抄 `GlassEditor.SetKeywords / SetBlendMode`。 | 对照 2026-10 的 Mochie 主分支。版本不同属性名可能变，找不到的属性会在 Console 警告并跳过；材质的 `_MaterialResetCheck` 设成 0，第一次在 Inspector 打开时 Mochie 会自己重算 keyword。 |
-| Normal Refraction | 文档给 0.3–0.5，取 0.4；Mochie 的 `_Refraction` 默认是 5。 | 文档说 Mochie 没有公开取值范围。如果雨滴几乎不扭曲窗外，往上调。 |
+| Normal Refraction | 用 shader 默认值 × `GlassRefractionMul`（默认 ×1，Mochie 默认是 5）。 | 设计文档原来写的 0.3–0.5 是不知道 Mochie 量程时估的，只有默认的十分之一左右，雨滴会几乎看不见，已改。进场景觉得扭曲太强，把倍数往下调。 |
 | Dynamic Droplets | 文档只写「多一点 / 默认 / 少一点」，取 ×1.3 / ×1 / ×0.7。 | 自定。 |
 | Lift | 文档「轻微偏蓝，亮度 -0.02」，取 (0.96, 0.98, 1.06, -0.02)。 | 自定；PPv2 的 `ColorUtilities.ColorToLift` 只看颜色相对亮度的偏差。 |
 | VRC Spatial Audio Source | 按类型名 `VRCSpatialAudioSource` 反射查找，设 `Near` / `Far`。 | 字段名按 VRChat 文档的属性名；设不上会提示手动填。 |

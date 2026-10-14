@@ -77,7 +77,8 @@ namespace RainRoomEditor
 
         public const float VignetteIntensity = 0.28f, VignetteSmoothness = 0.45f;
 
-        // 雷暴压暗 Profile 只勾两项
+        // 雷暴压暗 Profile 只勾两项。
+        // 纯黑白预设下只勾 Post-exposure：高优先级 Volume 是覆盖不是叠加，再勾 Saturation -55 会把 -100 的黑白盖掉，一打雷画面反而返色。
         public const float StormPostExposure = -0.7f, StormSaturation = -55f;
 
         // ───────── 灯（文档「场景与灯光 → 灯」「闪电与雷声 → 窗光」「冷光漏出来」） ─────────
@@ -133,7 +134,11 @@ namespace RainRoomEditor
         public const string MochieGlassShader = "Mochie/Glass";
         public static readonly Color GrabpassTint = Hex(0x8A, 0x93, 0xA3);
         public const float GlassRoughness = 0f;
-        public const float GlassRefraction = 0.4f;  // Normal Refraction 0.3–0.5
+        // Normal Refraction：按 shader 默认值的倍数给（Mochie 的 _Refraction 默认 5）。
+        // 设计文档原来写的 0.3–0.5 是在不知道 Mochie 量程时估的，只有默认值的十分之一左右，雨滴主要靠折射显出来，太弱会几乎看不见。
+        // 先用默认值，进场景觉得扭曲太强再往下调这个倍数。
+        public const float GlassRefractionMul = 1f;
+        public const float GlassRefractionFallback = 5f; // 读不到 shader 默认值时用
         public const float GlassReflectionStrength = 0.3f; // Environment Reflections 0.3
         // Droplets：按"默认值的倍数"给（小雨、大雨、雷暴）
         public static readonly float[] DropletStrengthMul = { 0.5f, 1f, 1.2f };

@@ -74,7 +74,8 @@ namespace RainRoomEditor
 
             // ── 门洞着色片 ──
             Shader leakShader = Shader.Find(RainRoomConfig.DoorLeakShader);
-            if (leakShader == null || !leakShader.isSupported)
+            // isSupported 不一定能发现编译错误（有错时 Unity 可能仍认为它"支持"、渲染成洋红色），所以再用编辑器的 ShaderHasError 查一次
+            if (leakShader == null || ShaderUtil.ShaderHasError(leakShader) || !leakShader.isSupported)
             {
                 Debug.LogWarning("[RainRoom] DoorFilterLeak.shader 没有编译成功（或当前平台不支持），跳过门洞着色片 LeakGlass。看 Console 里 shader 的报错。");
             }
@@ -142,12 +143,13 @@ namespace RainRoomEditor
                 vg.color.Override(Color.black);
             });
 
-            set.stormProfile = GetOrCreateProfile(gen + "/Room_PP_Storm_Profile.asset", resetAssets, p =>
+            // 两套预设各一份雷暴 Profile：纯黑白时不能覆盖饱和度（-55 会盖掉 -100，一打雷就返色）
+            set.stormProfile = GetOrCreateProfile(gen + (useMonoPreset ? "/Room_PP_Storm_Profile_Mono.asset" : "/Room_PP_Storm_Profile.asset"), resetAssets, p =>
             {
-                // 只勾两项：高优先级 Volume 是覆盖不是叠加，-0.7 就是最终值
+                // 高优先级 Volume 是覆盖不是叠加，-0.7 就是最终值
                 var cg = AddSettings<ColorGrading>(p);
                 cg.postExposure.Override(RainRoomConfig.StormPostExposure);
-                cg.saturation.Override(RainRoomConfig.StormSaturation);
+                if (!useMonoPreset) cg.saturation.Override(RainRoomConfig.StormSaturation);
             });
 
             AssetDatabase.SaveAssets();
@@ -288,9 +290,9 @@ namespace RainRoomEditor
             // 三档共用（文档「雨 → 玻璃」）
             SetFloatIfExists(m, "_BlendMode", 0f);       // Transparency = Grabpass
             SetFloatIfExists(m, "_Roughness", RainRoomConfig.GlassRoughness);
-            SetFloatIfExists(m, "_Refraction", RainRoomConfig.GlassRefraction);
-            // 注意：Mochie 的 _Refraction 默认值是 5，文档给的 Normal Refraction 是 0.3–0.5。
-            // 如果实际看着雨滴几乎不扭曲窗外，就往上调这一项（Mochie 没有公开取值范围，文档也是按观感给的）。
+            // Normal Refraction：shader 默认值 × 倍数（默认 ×1）。见 RainRoomConfig.GlassRefractionMul 的注释。
+            SetFloatIfExists(m, "_Refraction",
+                Default(shader, "_Refraction", RainRoomConfig.GlassRefractionFallback) * RainRoomConfig.GlassRefractionMul);
             if (m.HasProperty("_GrabpassTint")) m.SetColor("_GrabpassTint", RainRoomConfig.GrabpassTint);
             SetFloatIfExists(m, "_ReflectionsToggle", 1f);
             SetFloatIfExists(m, "_ReflectionStrength", RainRoomConfig.GlassReflectionStrength);
