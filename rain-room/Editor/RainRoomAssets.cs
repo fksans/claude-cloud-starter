@@ -6,7 +6,7 @@
 // - Particles/Standard Unlit 的 Rendering Mode：Unity 2022.3 StandardParticlesShaderGUI.SetupMaterialWithBlendMode
 //   （internal，不能直接调，下面 SetupParticleBlend 照抄了 Fade / Additive 两种）。
 // - Mochie/Glass：MochiesCode/Mochies-Unity-Shaders 的 Glass.shader 属性名、GlassEditor.SetKeywords / SetBlendMode
-//   （MIT）。材质的 keyword 是 Mochie 的 ShaderGUI 设的，用脚本改属性不会自动更新，所以下面照抄了它的逻辑；
+//   （MIT，Copyright (c) 2020 MochiesCode，许可全文见包根目录 THIRD_PARTY_NOTICES.md）。材质的 keyword 是 Mochie 的 ShaderGUI 设的，用脚本改属性不会自动更新，所以下面照抄了它的逻辑；
 //   另外把 _MaterialResetCheck 设成 0，第一次在 Inspector 里打开材质时 Mochie 会自己再算一遍。
 // - PPv2：PostProcessProfile.AddSettings<T>() 只把设置加进列表，子资源要自己 AssetDatabase.AddObjectToAsset，
 //   和 PPv2 的 EffectListEditor.AddEffectOverride 一样。

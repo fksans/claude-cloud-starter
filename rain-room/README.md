@@ -178,5 +178,5 @@ Room_这里有人
 ## 素材授权
 
 - 脚本、shader、cookie、雨丝贴图：自制，随便用。
-- 玻璃 shader：Mochie's Unity Shaders（MIT），本包只引用、不包含；`RainRoomAssets.cs` 里照抄了它 `GlassEditor` 的 keyword 设置逻辑。
+- 玻璃 shader：Mochie's Unity Shaders（MIT），本包只引用、不包含；`RainRoomAssets.cs` 里照抄了它 `GlassEditor` 的 keyword 设置逻辑，版权与许可声明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 - 音频、台灯模型、字体等的授权见设计文档「素材清单」。
